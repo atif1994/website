@@ -1,5 +1,4 @@
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:4000";
+import { apiUrl } from "@/lib/api";
 
 export type AuthUser = {
   id: string;
@@ -18,7 +17,7 @@ export type AuthResponse = {
 };
 
 async function postAuth(path: string, body: Record<string, string>) {
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(apiUrl(path), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

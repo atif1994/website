@@ -1,7 +1,30 @@
 import type { Product, ProductListResponse } from "@/models/product.model";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:4000";
+/**
+ * Base API URL from env.
+ * Local:  http://localhost:4000
+ * Prod:   https://hadikhantraders.com/api
+ */
+const RAW_API_BASE =
+  process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:4000";
+
+export function getApiBase() {
+  return RAW_API_BASE.replace(/\/$/, "");
+}
+
+/** Join base + path without doubling "/api". */
+export function apiUrl(path: string) {
+  const base = getApiBase();
+  let cleanPath = path.startsWith("/") ? path : `/${path}`;
+
+  if (base.endsWith("/api") && cleanPath.startsWith("/api/")) {
+    cleanPath = cleanPath.slice(4);
+  } else if (base.endsWith("/api") && cleanPath === "/api") {
+    cleanPath = "";
+  }
+
+  return `${base}${cleanPath}`;
+}
 
 function isPublicProduct(product: Product): boolean {
   if (product.status === "draft") return false;
@@ -21,7 +44,7 @@ export async function getProducts(params?: {
   if (params?.search) query.set("search", params.search);
   if (params?.category) query.set("category", params.category);
 
-  const response = await fetch(`${API_BASE}/api/products?${query}`, {
+  const response = await fetch(apiUrl(`/api/products?${query}`), {
     next: { revalidate: 15 },
   });
 
@@ -40,7 +63,7 @@ export async function getProducts(params?: {
 }
 
 export async function getProduct(id: string): Promise<Product | null> {
-  const response = await fetch(`${API_BASE}/api/products/${id}`, {
+  const response = await fetch(apiUrl(`/api/products/${id}`), {
     next: { revalidate: 15 },
   });
 
